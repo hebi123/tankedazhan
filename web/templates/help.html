@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>游戏帮助</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <style>
+      .help-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+      
+      .help-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      
+      .help-title {
+        font-size: 32px;
+        color: #38bdf8;
+        margin-bottom: 10px;
+      }
+      
+      .help-subtitle {
+        color: #94a3b8;
+        font-size: 16px;
+      }
+      
+      .help-section {
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid #334155;
+      }
+      
+      .section-title {
+        font-size: 20px;
+        color: #e2e8f0;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .control-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      
+      .control-item {
+        background: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+      
+      .control-key {
+        display: inline-block;
+        background: #334155;
+        color: #e2e8f0;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+      
+      .control-desc {
+        color: #94a3b8;
+        font-size: 14px;
+      }
+      
+      .enemy-types {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      
+      .enemy-card {
+        background: #0f172a;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+      
+      .enemy-name {
+        color: #e2e8f0;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      
+      .enemy-color {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      
+      .enemy-stats {
+        color: #94a3b8;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      
+      .game-rules {
+        background: #0f172a;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #38bdf8;
+      }
+      
+      .rule-item {
+        color: #e2e8f0;
+        margin-bottom: 12px;
+        padding-left: 20px;
+        position: relative;
+      }
+      
+      .rule-item::before {
+        content: "•";
+        color: #38bdf8;
+        position: absolute;
+        left: 0;
+      }
+      
+      .tips {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #475569;
+      }
+      
+      .tip-item {
+        color: #e2e8f0;
+        margin-bottom: 12px;
+        padding-left: 20px;
+        position: relative;
+      }
+      
+      .tip-item::before {
+        content: "💡";
+        position: absolute;
+        left: 0;
+      }
+      
+      .back-btn {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #38bdf8;
+        color: #0f172a;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+      }
+      
+      .back-btn:hover {
+        background: #0ea5e9;
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="help-container">
+      <div class="help-header">
+        <h1 class="help-title">游戏帮助</h1>
+        <p class="help-subtitle">坦克大战游戏操作指南</p>
+      </div>
+      
+      <!-- 基本操作 -->
+      <div class="help-section">
+        <h2 class="section-title">🎮 基本操作</h2>
+        <div class="control-grid">
+          <div class="control-item">
+            <div class="control-key">WASD</div>
+            <div class="control-desc">或方向键移动坦克</div>
+          </div>
+          <div class="control-item">
+            <div class="control-key">J</div>
+            <div class="control-desc">或空格键射击</div>
+          </div>
+          <div class="control-item">
+            <div class="control-key">ESC</div>
+            <div class="control-desc">暂停游戏</div>
+          </div>
+          <div class="control-item">
+            <div class="control-key">R</div>
+            <div class="control-desc">重新开始当前关卡</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 敌人类型 -->
+      <div class="help-section">
+        <h2 class="section-title">🎯 敌人类型</h2>
+        <div class="enemy-types">
+          <div class="enemy-card">
+            <div class="enemy-name">
+              <span class="enemy-color" style="background: #ef4444;"></span>
+              普通坦克
+            </div>
+            <div class="enemy-stats">
+              生命值: 1 | 移动速度: 中等 | 射速: 1.0/秒<br>
+              得分: 100 分
+            </div>
+          </div>
+          
+          <div class="enemy-card">
+            <div class="enemy-name">
+              <span class="enemy-color" style="background: #f97316;"></span>
+              快速坦克
+            </div>
+            <div class="enemy-stats">
+              生命值: 1 | 移动速度: 快 | 射速: 1.5/秒<br>
+              得分: 150 分
+            </div>
+          </div>
+          
+          <div class="enemy-card">
+            <div class="enemy-name">
+              <span class="enemy-color" style="background: #6b7280;"></span>
+              重装坦克
+            </div>
+            <div class="enemy-stats">
+              生命值: 2 | 移动速度: 慢 | 射速: 0.8/秒<br>
+              得分: 200 分
+            </div>
+          </div>
+          
+          <div class="enemy-card">
+            <div class="enemy-name">
+              <span class="enemy-color" style="background: #8b5cf6;"></span>
+              特殊坦克
+            </div>
+            <div class="enemy-stats">
+              生命值: 1 | 移动速度: 快 | 射速: 2.0/秒<br>
+              得分: 300 分
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 游戏规则 -->
+      <div class="help-section">
+        <h2 class="section-title">📋 游戏规则</h2>
+        <div class="game-rules">
+          <div class="rule-item">保护基地（金色鹰标），基地被摧毁则游戏失败</div>
+          <div class="rule-item">击败所有敌人即可获得胜利</div>
+          <div class="rule-item">玩家有 3 条生命，被敌人击中会失去 1 条生命</div>
+          <div class="rule-item">子弹可以破坏砖块，但无法穿透钢板</div>
+          <div class="rule-item">敌人按波次出现，每波有不同类型的敌人</div>
+          <div class="rule-item">击败敌人可以获得分数，不同类型敌人分数不同</div>
+        </div>
+      </div>
+      
+      <!-- 地图元素 -->
+      <div class="help-section">
+        <h2 class="section-title">🗺️ 地图元素</h2>
+        <div class="control-grid">
+          <div class="control-item">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <div style="width: 16px; height: 16px; background: #b45309; margin-right: 8px; border-radius: 2px;"></div>
+              <strong style="color: #e2e8f0;">砖块</strong>
+            </div>
+            <div class="control-desc">可被子弹破坏，阻挡坦克移动</div>
+          </div>
+          
+          <div class="control-item">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <div style="width: 16px; height: 16px; background: #94a3b8; margin-right: 8px; border-radius: 2px;"></div>
+              <strong style="color: #e2e8f0;">钢板</strong>
+            </div>
+            <div class="control-desc">无法被破坏，阻挡坦克和子弹</div>
+          </div>
+          
+          <div class="control-item">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <div style="width: 16px; height: 16px; background: #14532d; margin-right: 8px; border-radius: 2px;"></div>
+              <strong style="color: #e2e8f0;">草地</strong>
+            </div>
+            <div class="control-desc">阻挡坦克移动，子弹可穿透</div>
+          </div>
+          
+          <div class="control-item">
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+              <div style="width: 16px; height: 16px; background: #0369a1; margin-right: 8px; border-radius: 2px;"></div>
+              <strong style="color: #e2e8f0;">水面</strong>
+            </div>
+            <div class="control-desc">阻挡坦克和子弹</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 游戏技巧 -->
+      <div class="help-section">
+        <h2 class="section-title">💡 游戏技巧</h2>
+        <div class="tips">
+          <div class="tip-item">利用砖块作为掩护，避免被敌人直接攻击</div>
+          <div class="tip-item">优先攻击重装坦克，它们血量高但移动慢</div>
+          <div class="tip-item">注意快速坦克，它们移动快但血量低</div>
+          <div class="tip-item">保持与基地的距离，避免敌人直接攻击基地</div>
+          <div class="tip-item">合理利用射击冷却时间，不要盲目连射</div>
+          <div class="tip-item">观察敌人移动模式，预判其位置进行攻击</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="{{ url_for('main_menu') }}" class="back-btn">返回主菜单</a>
+      </div>
+    </div>
+  </body>
+</html>

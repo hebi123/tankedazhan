@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>坦克大战 · 前端</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>坦克大战 · Flask 前端</h1>
+      <p>如果你能看到这个页面，说明 Flask 已经运行成功。</p>
+      <p>健康检查：<code>/health</code></p>
+      <p>
+        <a class="btn" style="padding:12px 20px;border:2px solid #38bdf8;border-radius:8px;color:#38bdf8;text-decoration:none;font-weight:600;background:rgba(56,189,248,0.1)" href="{{ url_for('main_menu') }}">🎮 进入主菜单</a>
+      </p>
+      <p style="margin-top:20px;">
+        <a class="btn" style="padding:8px 12px;border:1px solid #334155;border-radius:6px;color:#e2e8f0;text-decoration:none" href="{{ url_for('game') }}">直接进入游戏</a>
+        <a class="btn" style="margin-left:8px;padding:8px 12px;border:1px solid #334155;border-radius:6px;color:#e2e8f0;text-decoration:none" href="{{ url_for('levels') }}">关卡列表</a>
+        <a class="btn" style="margin-left:8px;padding:8px 12px;border:1px solid #334155;border-radius:6px;color:#e2e8f0;text-decoration:none" href="/api/levels" target="_blank">API 数据</a>
+      </p>
+    </main>
+  </body>
+  </html>
+
+

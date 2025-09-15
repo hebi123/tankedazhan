@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>坦克大战 · 主菜单</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <style>
+      .menu-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      }
+      
+      .game-title {
+        font-size: 48px;
+        font-weight: bold;
+        color: #38bdf8;
+        text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      
+      .game-subtitle {
+        font-size: 18px;
+        color: #94a3b8;
+        margin-bottom: 40px;
+        text-align: center;
+      }
+      
+      .menu-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 300px;
+      }
+      
+      .menu-btn {
+        display: block;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        border: 2px solid #475569;
+        border-radius: 12px;
+        color: #e2e8f0;
+        text-decoration: none;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      
+      .menu-btn:hover {
+        background: linear-gradient(135deg, #334155 0%, #475569 100%);
+        border-color: #38bdf8;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+      }
+      
+      .menu-btn.primary {
+        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+        border-color: #0ea5e9;
+        color: #0f172a;
+      }
+      
+      .menu-btn.primary:hover {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+      }
+      
+      .game-info {
+        margin-top: 40px;
+        text-align: center;
+        color: #64748b;
+        font-size: 14px;
+      }
+      
+      .version {
+        margin-top: 20px;
+        color: #475569;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="menu-container">
+      <h1 class="game-title">坦克大战</h1>
+      <p class="game-subtitle">Tank Battle Game</p>
+      
+      <div class="menu-buttons">
+        <a href="{{ url_for('game') }}" class="menu-btn primary">开始游戏</a>
+        <a href="{{ url_for('levels') }}" class="menu-btn">关卡选择</a>
+        <a href="{{ url_for('settings') }}" class="menu-btn">游戏设置</a>
+        <a href="{{ url_for('help') }}" class="menu-btn">游戏帮助</a>
+        <a href="{{ url_for('about') }}" class="menu-btn">关于游戏</a>
+      </div>
+      
+      <div class="game-info">
+        <p>使用 WASD 或方向键移动，J 或空格键射击</p>
+        <p>保护基地，击败所有敌人获得胜利！</p>
+        <div class="version">版本 1.0.0 | 基于 Flask + JavaScript</div>
+      </div>
+    </div>
+  </body>
+</html>
