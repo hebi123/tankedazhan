@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="zh-CN">
   <head>
@@ -65,6 +67,11 @@
       let playerLives = 3;
       let score = 0;
       let base = null; // 基地对象
+      
+      // 爆炸特效系统
+      const explosions = []; // 爆炸效果数组
+      const particles = []; // 粒子系统
+      let screenShake = { x: 0, y: 0, intensity: 0, duration: 0 }; // 屏幕震动
 
       function drawTank(){
         ctx.save();
@@ -180,10 +187,20 @@
           const enemy = enemies[i];
           updateEnemy(enemy, dt);
           if (enemy.health <= 0) {
+            // 创建爆炸效果
+            const explosionType = enemy.type === 'heavy' ? 'large' : enemy.type === 'special' ? 'large' : 'medium';
+            const explosionColor = enemy.type === 'special' ? '#fbbf24' : '#ff6b35';
+            createExplosion(enemy.x, enemy.y, explosionType, explosionColor);
+            
             score += getEnemyScore(enemy.type);
             enemies.splice(i, 1);
           }
         }
+
+        // 更新爆炸特效
+        updateExplosions(dt);
+        updateParticles(dt);
+        updateScreenShake(dt);
 
         // 检查游戏状态
         checkGameState();
@@ -192,8 +209,227 @@
         updateHUD();
       }
 
+      // ========== 爆炸特效系统 ==========
+      
+      /**
+       * 创建爆炸效果
+       * @param {number} x - X坐标
+       * @param {number} y - Y坐标
+       * @param {string} type - 爆炸类型 ('small', 'medium', 'large', 'brick')
+       * @param {string} color - 主要颜色
+       */
+      function createExplosion(x, y, type = 'medium', color = '#ff6b35') {
+        const config = {
+          small: { radius: 20, particles: 8, duration: 0.3, rings: 2 },
+          medium: { radius: 35, particles: 16, duration: 0.5, rings: 3 },
+          large: { radius: 50, particles: 24, duration: 0.7, rings: 4 },
+          brick: { radius: 15, particles: 6, duration: 0.25, rings: 1 }
+        };
+        
+        const cfg = config[type] || config.medium;
+        
+        explosions.push({
+          x, y,
+          maxRadius: cfg.radius,
+          currentRadius: 0,
+          duration: cfg.duration,
+          elapsed: 0,
+          rings: cfg.rings,
+          color: color,
+          type: type
+        });
+        
+        // 创建粒子
+        createParticles(x, y, cfg.particles, color, type);
+        
+        // 根据爆炸大小触发屏幕震动
+        if (type === 'large') {
+          triggerScreenShake(8, 0.3);
+        } else if (type === 'medium') {
+          triggerScreenShake(4, 0.2);
+        } else if (type === 'small') {
+          triggerScreenShake(2, 0.1);
+        }
+      }
+      
+      /**
+       * 创建粒子效果
+       * @param {number} x - X坐标
+       * @param {number} y - Y坐标
+       * @param {number} count - 粒子数量
+       * @param {string} color - 粒子颜色
+       * @param {string} type - 效果类型
+       */
+      function createParticles(x, y, count, color, type) {
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+          const speed = type === 'brick' ? 50 + Math.random() * 50 : 100 + Math.random() * 100;
+          const size = type === 'brick' ? 2 + Math.random() * 2 : 3 + Math.random() * 3;
+          
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: size,
+            life: 0.5 + Math.random() * 0.5,
+            maxLife: 0.5 + Math.random() * 0.5,
+            color: color,
+            gravity: type === 'brick' ? 200 : 150
+          });
+        }
+      }
+      
+      /**
+       * 触发屏幕震动
+       * @param {number} intensity - 震动强度
+       * @param {number} duration - 持续时间（秒）
+       */
+      function triggerScreenShake(intensity, duration) {
+        if (screenShake.intensity < intensity) {
+          screenShake.intensity = intensity;
+          screenShake.duration = duration;
+        }
+      }
+      
+      /**
+       * 更新爆炸效果
+       * @param {number} dt - 时间增量
+       */
+      function updateExplosions(dt) {
+        for (let i = explosions.length - 1; i >= 0; i--) {
+          const exp = explosions[i];
+          exp.elapsed += dt;
+          
+          // 更新爆炸半径
+          const progress = exp.elapsed / exp.duration;
+          exp.currentRadius = exp.maxRadius * Math.min(progress * 1.5, 1);
+          
+          // 移除已完成的爆炸
+          if (exp.elapsed >= exp.duration) {
+            explosions.splice(i, 1);
+          }
+        }
+      }
+      
+      /**
+       * 更新粒子效果
+       * @param {number} dt - 时间增量
+       */
+      function updateParticles(dt) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          
+          // 更新位置
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          
+          // 应用重力
+          p.vy += p.gravity * dt;
+          
+          // 减少生命值
+          p.life -= dt;
+          
+          // 移除已死亡的粒子
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+      }
+      
+      /**
+       * 更新屏幕震动
+       * @param {number} dt - 时间增量
+       */
+      function updateScreenShake(dt) {
+        if (screenShake.duration > 0) {
+          screenShake.duration -= dt;
+          
+          if (screenShake.duration <= 0) {
+            screenShake.x = 0;
+            screenShake.y = 0;
+            screenShake.intensity = 0;
+          } else {
+            // 随机震动偏移
+            screenShake.x = (Math.random() - 0.5) * screenShake.intensity;
+            screenShake.y = (Math.random() - 0.5) * screenShake.intensity;
+          }
+        }
+      }
+      
+      /**
+       * 绘制爆炸效果
+       */
+      function drawExplosions() {
+        for (const exp of explosions) {
+          const progress = exp.elapsed / exp.duration;
+          const alpha = 1 - progress;
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          
+          // 绘制多层爆炸环
+          for (let ring = 0; ring < exp.rings; ring++) {
+            const ringProgress = Math.max(0, progress - ring * 0.2);
+            const radius = exp.currentRadius * ringProgress;
+            
+            // 外环 - 亮色
+            const gradient = ctx.createRadialGradient(exp.x, exp.y, 0, exp.x, exp.y, radius);
+            gradient.addColorStop(0, exp.color + 'ff');
+            gradient.addColorStop(0.4, exp.color + 'aa');
+            gradient.addColorStop(0.7, exp.color + '44');
+            gradient.addColorStop(1, exp.color + '00');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(exp.x, exp.y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          // 中心闪光
+          if (progress < 0.3) {
+            const flashAlpha = (0.3 - progress) / 0.3;
+            ctx.globalAlpha = flashAlpha;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(exp.x, exp.y, exp.maxRadius * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+      }
+      
+      /**
+       * 绘制粒子效果
+       */
+      function drawParticles() {
+        for (const p of particles) {
+          const alpha = p.life / p.maxLife;
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // 添加轨迹效果
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.beginPath();
+          ctx.arc(p.x - p.vx * 0.02, p.y - p.vy * 0.02, p.size * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.restore();
+        }
+      }
+
       function render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
+        
+        // 应用屏幕震动效果
+        ctx.save();
+        ctx.translate(screenShake.x, screenShake.y);
+        
         // 背景网格
         ctx.strokeStyle = '#1e293b';
         ctx.lineWidth = 1;
@@ -263,7 +499,14 @@
         
         drawTank();
         
-        // 游戏状态显示
+        // 绘制爆炸和粒子效果（在坦克和敌人之后，确保显示在最上层）
+        drawParticles();
+        drawExplosions();
+        
+        // 恢复屏幕震动的变换
+        ctx.restore();
+        
+        // 游戏状态显示（不受屏幕震动影响）
         if (gameState !== 'playing') {
           drawGameState();
         }
@@ -421,12 +664,22 @@
             level.tiles[gy][gx] = 'ground';
             delete level.tile_health[tileKey];
             console.log('砖块被破坏！');
+            // 创建砖块破坏特效
+            const brickX = ox + gx * ts + ts / 2;
+            const brickY = oy + gy * ts + ts / 2;
+            createExplosion(brickX, brickY, 'brick', '#b45309');
           }
           return true;
         }
         
         if (t === 'steel' || t === 'water') { 
           console.log(`子弹击中${t === 'steel' ? '钢板' : '水面'}！`);
+          // 钢板击中时产生小火花
+          if (t === 'steel') {
+            const steelX = ox + gx * ts + ts / 2;
+            const steelY = oy + gy * ts + ts / 2;
+            createParticles(steelX, steelY, 4, '#94a3b8', 'brick');
+          }
           return true; 
         }
         
@@ -467,7 +720,12 @@
           for (let i = 0; i < enemies.length; i++) {
             const enemy = enemies[i];
             if (isColliding(b, enemy)) {
+              // 创建命中特效（小火花）
+              createParticles(b.x, b.y, 6, enemy.color, 'small');
+              
               enemy.health--;
+              
+              // 如果敌人即将死亡，不在这里创建爆炸（在敌人更新循环中统一处理）
               return true;
             }
           }
@@ -476,8 +734,14 @@
         // 敌人子弹击中玩家
         if (b.owner === 'enemy') {
           if (isColliding(b, tank)) {
+            // 创建玩家受击特效
+            createExplosion(tank.x, tank.y, 'medium', '#38bdf8');
+            triggerScreenShake(6, 0.25);
+            
             playerLives--;
             if (playerLives <= 0) {
+              // 玩家死亡，创建大爆炸
+              createExplosion(tank.x, tank.y, 'large', '#ef4444');
               gameState = 'gameOver';
             }
             return true;
@@ -485,8 +749,15 @@
           
           // 敌人子弹击中基地
           if (base && isColliding(b, base)) {
+            // 创建基地受击特效
+            createExplosion(base.x, base.y, 'medium', '#fbbf24');
+            triggerScreenShake(8, 0.3);
+            
             base.health--;
             if (base.health <= 0) {
+              // 基地被摧毁，创建大爆炸
+              createExplosion(base.x, base.y, 'large', '#ef4444');
+              triggerScreenShake(12, 0.5);
               gameState = 'gameOver';
             }
             return true;
@@ -514,6 +785,11 @@
             // 只有不同主人的子弹才能对撞
             if (bullet1.owner !== bullet2.owner) {
               if (isColliding(bullet1, bullet2)) {
+                // 创建子弹对撞特效
+                const collisionX = (bullet1.x + bullet2.x) / 2;
+                const collisionY = (bullet1.y + bullet2.y) / 2;
+                createExplosion(collisionX, collisionY, 'small', '#60a5fa');
+                
                 // 两个子弹都消失
                 bullets.splice(j, 1);
                 bullets.splice(i, 1);
