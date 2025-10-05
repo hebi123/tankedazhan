@@ -76,6 +76,21 @@
       // 道具系统
       const powerups = []; // 道具数组
       let powerupSpawnChance = 0.3; // 敌人死亡时30%概率掉落道具
+      
+      // 音效系统
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const sounds = {
+        shoot: null,
+        explosion: null,
+        hit: null,
+        powerup: null,
+        gameOver: null,
+        victory: null
+      };
+      let masterVolume = 0.8;
+      let sfxVolume = 0.9;
+      let musicVolume = 0.7;
+      let backgroundMusic = null;
 
       function drawTank(){
         ctx.save();
@@ -259,13 +274,18 @@
         // 创建粒子
         createParticles(x, y, cfg.particles, color, type);
         
-        // 根据爆炸大小触发屏幕震动
+        // 根据爆炸大小触发屏幕震动和音效
         if (type === 'large') {
           triggerScreenShake(8, 0.3);
+          generateExplosionSound('large');
         } else if (type === 'medium') {
           triggerScreenShake(4, 0.2);
+          generateExplosionSound('medium');
         } else if (type === 'small') {
           triggerScreenShake(2, 0.1);
+          generateExplosionSound('small');
+        } else if (type === 'brick') {
+          generateHitSound();
         }
       }
       
@@ -541,6 +561,9 @@
             // 拾取道具
             applyPowerup(p.type);
             
+            // 播放拾取音效
+            generatePowerupSound();
+            
             // 创建拾取特效
             createExplosion(p.x, p.y, 'small', p.color);
             createParticles(p.x, p.y, 12, p.color, 'small');
@@ -644,6 +667,164 @@
           }
           
           ctx.restore();
+        }
+      }
+
+      // ========== 音效系统 ==========
+      
+      /**
+       * 生成射击音效
+       */
+      function generateShootSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(110, audioContext.currentTime + 0.1);
+        
+        gainNode.gain.setValueAtTime(sfxVolume * masterVolume * 0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+      }
+      
+      /**
+       * 生成爆炸音效
+       */
+      function generateExplosionSound(type = 'medium') {
+        const duration = type === 'large' ? 0.5 : type === 'medium' ? 0.3 : 0.15;
+        const volume = type === 'large' ? 0.4 : type === 'medium' ? 0.3 : 0.2;
+        
+        // 低频隆隆声
+        const noise = audioContext.createBufferSource();
+        const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+        
+        const filter = audioContext.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1000, audioContext.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + duration);
+        
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(sfxVolume * masterVolume * volume, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+        
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        noise.start(audioContext.currentTime);
+        noise.stop(audioContext.currentTime + duration);
+      }
+      
+      /**
+       * 生成命中音效
+       */
+      function generateHitSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.05);
+        
+        gainNode.gain.setValueAtTime(sfxVolume * masterVolume * 0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.05);
+      }
+      
+      /**
+       * 生成拾取道具音效
+       */
+      function generatePowerupSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.1);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, audioContext.currentTime + 0.2);
+        
+        gainNode.gain.setValueAtTime(sfxVolume * masterVolume * 0.25, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      }
+      
+      /**
+       * 生成游戏结束音效
+       */
+      function generateGameOverSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(220, audioContext.currentTime + 0.5);
+        oscillator.frequency.exponentialRampToValueAtTime(110, audioContext.currentTime + 1.0);
+        
+        gainNode.gain.setValueAtTime(sfxVolume * masterVolume * 0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.0);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 1.0);
+      }
+      
+      /**
+       * 生成胜利音效
+       */
+      function generateVictorySound() {
+        const notes = [262, 330, 392, 523]; // C-E-G-C和弦
+        notes.forEach((freq, index) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(freq, audioContext.currentTime + index * 0.1);
+          
+          gainNode.gain.setValueAtTime(0, audioContext.currentTime + index * 0.1);
+          gainNode.gain.linearRampToValueAtTime(sfxVolume * masterVolume * 0.2, audioContext.currentTime + index * 0.1 + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.1 + 0.5);
+          
+          oscillator.start(audioContext.currentTime + index * 0.1);
+          oscillator.stop(audioContext.currentTime + index * 0.1 + 0.5);
+        });
+      }
+      
+      /**
+       * 从设置中加载音量
+       */
+      function loadAudioSettings() {
+        const saved = localStorage.getItem('tankBattleSettings');
+        if (saved) {
+          const settings = JSON.parse(saved);
+          masterVolume = (settings.masterVolume || 80) / 100;
+          sfxVolume = (settings.sfxVolume || 90) / 100;
+          musicVolume = (settings.musicVolume || 70) / 100;
         }
       }
 
@@ -832,6 +1013,9 @@
         score = 0;
       }
 
+      // 加载音频设置
+      loadAudioSettings();
+      
       loadLevel(1).then(()=>requestAnimationFrame(loop));
 
       function fire(){
@@ -844,6 +1028,9 @@
         if (tank.dir === 'left') vx = -speed;
         if (tank.dir === 'right') vx = speed;
         bullets.push({ x: tank.x, y: tank.y, vx, vy, owner: 'player' });
+        
+        // 播放射击音效
+        generateShootSound();
       }
 
       function checkBulletCollision(b){
@@ -1329,13 +1516,17 @@
       function checkGameState() {
         // 检查失败条件：玩家生命为0或基地被摧毁
         if (playerLives <= 0 || (base && base.health <= 0)) {
-          gameState = 'gameOver';
+          if (gameState === 'playing') {
+            gameState = 'gameOver';
+            generateGameOverSound();
+          }
           return;
         }
         
         // 检查胜利条件：所有波次完成且无敌人
         if (currentWave >= enemyWaves.length && enemies.length === 0 && gameState === 'playing') {
           gameState = 'victory';
+          generateVictorySound();
         }
       }
 
