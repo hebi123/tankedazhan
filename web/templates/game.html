@@ -72,6 +72,10 @@
       const explosions = []; // 爆炸效果数组
       const particles = []; // 粒子系统
       let screenShake = { x: 0, y: 0, intensity: 0, duration: 0 }; // 屏幕震动
+      
+      // 道具系统
+      const powerups = []; // 道具数组
+      let powerupSpawnChance = 0.3; // 敌人死亡时30%概率掉落道具
 
       function drawTank(){
         ctx.save();
@@ -192,6 +196,13 @@
             const explosionColor = enemy.type === 'special' ? '#fbbf24' : '#ff6b35';
             createExplosion(enemy.x, enemy.y, explosionType, explosionColor);
             
+            // 随机掉落道具
+            if (Math.random() < powerupSpawnChance) {
+              const powerupTypes = ['tank', 'star', 'helmet', 'shovel', 'bomb', 'gun'];
+              const randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+              createPowerup(enemy.x, enemy.y, randomType);
+            }
+            
             score += getEnemyScore(enemy.type);
             enemies.splice(i, 1);
           }
@@ -201,6 +212,12 @@
         updateExplosions(dt);
         updateParticles(dt);
         updateScreenShake(dt);
+        
+        // 更新道具
+        updatePowerups(dt);
+        
+        // 检查道具拾取
+        checkPowerupCollection();
 
         // 检查游戏状态
         checkGameState();
@@ -423,6 +440,213 @@
         }
       }
 
+      // ========== 道具系统 ==========
+      
+      /**
+       * 创建道具
+       * @param {number} x - X坐标
+       * @param {number} y - Y坐标
+       * @param {string} type - 道具类型
+       */
+      function createPowerup(x, y, type = 'tank') {
+        const config = {
+          tank: { 
+            color: '#22c55e', 
+            icon: '🎖️', 
+            duration: 10, 
+            effect: '生命+1',
+            size: 16
+          },
+          star: { 
+            color: '#fbbf24', 
+            icon: '⭐', 
+            duration: 10, 
+            effect: '升级',
+            size: 16
+          },
+          helmet: { 
+            color: '#60a5fa', 
+            icon: '🛡️', 
+            duration: 10, 
+            effect: '无敌',
+            size: 16
+          },
+          shovel: { 
+            color: '#94a3b8', 
+            icon: '🔨', 
+            duration: 10, 
+            effect: '加固基地',
+            size: 16
+          },
+          bomb: { 
+            color: '#ef4444', 
+            icon: '💣', 
+            duration: 10, 
+            effect: '清屏',
+            size: 16
+          },
+          gun: { 
+            color: '#8b5cf6', 
+            icon: '🔫', 
+            duration: 10, 
+            effect: '高威力',
+            size: 16
+          }
+        };
+        
+        const cfg = config[type] || config.tank;
+        
+        powerups.push({
+          x, y,
+          type: type,
+          color: cfg.color,
+          icon: cfg.icon,
+          effect: cfg.effect,
+          size: cfg.size,
+          lifetime: cfg.duration,
+          elapsed: 0,
+          bobOffset: Math.random() * Math.PI * 2 // 上下浮动偏移
+        });
+      }
+      
+      /**
+       * 更新道具
+       * @param {number} dt - 时间增量
+       */
+      function updatePowerups(dt) {
+        for (let i = powerups.length - 1; i >= 0; i--) {
+          const p = powerups[i];
+          p.elapsed += dt;
+          
+          // 移除过期的道具
+          if (p.elapsed >= p.lifetime) {
+            powerups.splice(i, 1);
+          }
+        }
+      }
+      
+      /**
+       * 检查道具拾取
+       */
+      function checkPowerupCollection() {
+        for (let i = powerups.length - 1; i >= 0; i--) {
+          const p = powerups[i];
+          
+          // 检查玩家是否碰到道具
+          const dx = tank.x - p.x;
+          const dy = tank.y - p.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < (tank.w / 2 + p.size / 2)) {
+            // 拾取道具
+            applyPowerup(p.type);
+            
+            // 创建拾取特效
+            createExplosion(p.x, p.y, 'small', p.color);
+            createParticles(p.x, p.y, 12, p.color, 'small');
+            
+            // 移除道具
+            powerups.splice(i, 1);
+          }
+        }
+      }
+      
+      /**
+       * 应用道具效果
+       * @param {string} type - 道具类型
+       */
+      function applyPowerup(type) {
+        switch(type) {
+          case 'tank':
+            // 生命+1
+            playerLives++;
+            console.log('拾取坦克道具！生命+1，当前生命:', playerLives);
+            break;
+          case 'star':
+            // 升级（暂时只增加分数）
+            score += 500;
+            console.log('拾取星星道具！得分+500');
+            break;
+          case 'helmet':
+            // 无敌效果（待实现）
+            console.log('拾取头盔道具！获得无敌');
+            break;
+          case 'shovel':
+            // 加固基地（待实现）
+            console.log('拾取锹道具！基地加固');
+            break;
+          case 'bomb':
+            // 清屏
+            console.log('拾取炸弹道具！清除所有敌人');
+            // 清除所有敌人并创建爆炸
+            for (const enemy of enemies) {
+              createExplosion(enemy.x, enemy.y, 'large', '#ef4444');
+              score += getEnemyScore(enemy.type);
+            }
+            enemies.splice(0);
+            triggerScreenShake(10, 0.4);
+            break;
+          case 'gun':
+            // 高威力弹（待实现）
+            console.log('拾取枪道具！获得高威力弹');
+            break;
+        }
+      }
+      
+      /**
+       * 绘制道具
+       */
+      function drawPowerups() {
+        for (const p of powerups) {
+          // 上下浮动效果
+          const bobAmount = Math.sin(p.elapsed * 3 + p.bobOffset) * 3;
+          const drawY = p.y + bobAmount;
+          
+          ctx.save();
+          
+          // 绘制发光背景
+          const gradient = ctx.createRadialGradient(p.x, drawY, 0, p.x, drawY, p.size);
+          gradient.addColorStop(0, p.color + 'ff');
+          gradient.addColorStop(0.5, p.color + '88');
+          gradient.addColorStop(1, p.color + '00');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, drawY, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // 绘制道具主体
+          ctx.fillStyle = p.color;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, drawY, p.size * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          
+          // 绘制图标
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(p.icon, p.x, drawY);
+          
+          // 绘制剩余时间提示
+          const timeLeft = p.lifetime - p.elapsed;
+          if (timeLeft < 3) {
+            // 最后3秒闪烁
+            const flash = Math.sin(p.elapsed * 10) > 0;
+            if (flash) {
+              ctx.globalAlpha = 0.7;
+              ctx.fillStyle = '#ef4444';
+              ctx.font = '10px Arial';
+              ctx.fillText(Math.ceil(timeLeft), p.x, drawY - p.size - 5);
+            }
+          }
+          
+          ctx.restore();
+        }
+      }
+
       function render(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         
@@ -498,6 +722,9 @@
         }
         
         drawTank();
+        
+        // 绘制道具
+        drawPowerups();
         
         // 绘制爆炸和粒子效果（在坦克和敌人之后，确保显示在最上层）
         drawParticles();
