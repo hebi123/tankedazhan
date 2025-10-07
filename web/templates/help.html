@@ -386,6 +386,61 @@
         </div>
       </div>
       
+      <!-- 存档系统 -->
+      <div class="help-section">
+        <h2 class="section-title">💾 存档系统</h2>
+        <div class="game-rules">
+          <div class="rule-item"><strong>自动保存</strong>：游戏会自动保存您的进度和设置</div>
+          <div class="rule-item"><strong>保存内容</strong>：当前关卡、得分、生命值、最高分记录</div>
+          <div class="rule-item"><strong>设置保存</strong>：音量、按键映射、分辨率等设置会持久化</div>
+          <div class="rule-item"><strong>关卡进度</strong>：已解锁的关卡会被记录</div>
+          <div class="rule-item"><strong>统计数据</strong>：总游戏时间、击毁敌人数等统计信息</div>
+          <div class="rule-item"><strong>数据存储</strong>：使用浏览器LocalStorage本地存储</div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 16px; background: #1e293b; border-radius: 8px; border-left: 4px solid #38bdf8;">
+          <h3 style="color: #38bdf8; margin: 0 0 12px 0; font-size: 16px;">📝 存档数据结构</h3>
+          <div style="color: #94a3b8; font-size: 14px; line-height: 1.6;">
+            <p style="margin: 8px 0;"><strong style="color: #e2e8f0;">游戏进度：</strong></p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li>当前关卡编号</li>
+              <li>玩家生命值</li>
+              <li>当前得分</li>
+              <li>历史最高分</li>
+              <li>已解锁关卡列表</li>
+            </ul>
+            
+            <p style="margin: 16px 0 8px;"><strong style="color: #e2e8f0;">游戏设置：</strong></p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li>主音量、音效音量、音乐音量</li>
+              <li>屏幕分辨率</li>
+              <li>全屏模式</li>
+              <li>难度设置</li>
+              <li>按键映射</li>
+            </ul>
+            
+            <p style="margin: 16px 0 8px;"><strong style="color: #e2e8f0;">统计信息：</strong></p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              <li>总游戏时间</li>
+              <li>击毁敌人总数（按类型统计）</li>
+              <li>发射子弹总数</li>
+              <li>拾取道具总数</li>
+              <li>完成关卡数</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 16px; background: #0f172a; border-radius: 8px; border: 1px solid #334155;">
+          <h3 style="color: #fbbf24; margin: 0 0 12px 0; font-size: 16px;">⚠️ 注意事项</h3>
+          <div style="color: #94a3b8; font-size: 14px; line-height: 1.6;">
+            <p style="margin: 8px 0;">• 清除浏览器缓存会删除所有存档数据</p>
+            <p style="margin: 8px 0;">• 建议定期导出存档备份（功能开发中）</p>
+            <p style="margin: 8px 0;">• 不同浏览器的存档数据不互通</p>
+            <p style="margin: 8px 0;">• 隐私模式下的进度不会被保存</p>
+          </div>
+        </div>
+      </div>
+      
       <!-- 游戏技巧 -->
       <div class="help-section">
         <h2 class="section-title">💡 游戏技巧</h2>
@@ -396,6 +451,8 @@
           <div class="tip-item">保持与基地的距离，避免敌人直接攻击基地</div>
           <div class="tip-item">合理利用射击冷却时间，不要盲目连射</div>
           <div class="tip-item">观察敌人移动模式，预判其位置进行攻击</div>
+          <div class="tip-item">积极拾取道具，特别是坦克道具增加生命值</div>
+          <div class="tip-item">炸弹道具在危急时刻可以清屏救命</div>
         </div>
       </div>
       
